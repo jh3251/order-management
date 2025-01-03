@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Page 2</title>
+    <style>
+        /* Add styling here (similar to above, for simplicity, omitted here) */
+    </style>
+</head>
+<body>
+    <h1>Order Management - Laptop</h1>
+    <div class="container">
+        <h2>Order Status</h2>
+        <div>
+            <h3>First Box (Called Orders)</h3>
+            <div id="firstBox" class="box"></div>
+        </div>
+        <div>
+            <h3>Second Box (All Orders)</h3>
+            <div id="secondBox" class="box"></div>
+        </div>
+    </div>
+
+    <script>
+        function loadOrders() {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const firstBox = document.getElementById('firstBox');
+            const secondBox = document.getElementById('secondBox');
+
+            firstBox.innerHTML = '';
+            secondBox.innerHTML = '';
+
+            orders.forEach(order => {
+                const orderDiv = document.createElement('div');
+                orderDiv.className = 'order';
+                orderDiv.innerText = order.number;
+
+                if (order.called) {
+                    firstBox.appendChild(orderDiv);
+                } else {
+                    secondBox.appendChild(orderDiv);
+                }
+            });
+        }
+
+        // Load orders on page load
+        window.onload = loadOrders;
+
+        // Optionally, reload every few seconds to check for updates
+        setInterval(loadOrders, 5000);
+    </script>
+</body>
+</html>
