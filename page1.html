@@ -1,190 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Management - Mobile</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #333;
-        }
-        header {
-            background-color: #007bff;
-            color: white;
-            padding: 20px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .container {
-            width: 90%;
-            max-width: 400px;
-            margin: 20px auto;
-            text-align: center;
-        }
-        input {
-            font-size: 1.2rem;
-            padding: 10px;
-            width: 100%;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .keypad button {
-            font-size: 1.5rem;
-            padding: 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .keypad button:hover {
-            background-color: #0056b3;
-        }
-        .keypad button:active {
-            background-color: #003d7a;
-        }
-        button.add-order {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #28a745;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        button.add-order:hover {
-            background-color: #218838;
-        }
-        .order-list {
-            margin-top: 20px;
-        }
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            margin-bottom: 10px;
-            padding: 10px 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .order-item button {
-            background: none;
-            border: none;
-            color: #007bff;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-        .order-item button:hover {
-            text-decoration: underline;
-        }
-    </style>
-    <script>
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-    </script>
+  <title>Order Input Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+    }
+    input, button {
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+    .order-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    .order-list li {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+      background: #ffffff;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    button.call {
+      background-color: #007bff;
+      color: white;
+    }
+    button.delete {
+      background-color: #dc3545;
+      color: white;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js"></script>
 </head>
 <body>
-    <header>
-        <h1>Order Management</h1>
-    </header>
-    <div class="container">
-        <input type="text" id="orderInput" placeholder="Enter order number" readonly>
-        <div class="keypad">
-            <button onclick="appendNumber('1')">1</button>
-            <button onclick="appendNumber('2')">2</button>
-            <button onclick="appendNumber('3')">3</button>
-            <button onclick="appendNumber('4')">4</button>
-            <button onclick="appendNumber('5')">5</button>
-            <button onclick="appendNumber('6')">6</button>
-            <button onclick="appendNumber('7')">7</button>
-            <button onclick="appendNumber('8')">8</button>
-            <button onclick="appendNumber('9')">9</button>
-            <button onclick="clearInput()">Clear</button>
-            <button onclick="appendNumber('0')">0</button>
-            <button onclick="backspace()">←</button>
-        </div>
-        <button class="add-order" onclick="addOrder()">Add Order</button>
-        <div class="order-list" id="orderList"></div>
-    </div>
-    <script>
-        function appendNumber(num) {
-            const orderInput = document.getElementById('orderInput');
-            orderInput.value += num;
-        }
-        function backspace() {
-            const orderInput = document.getElementById('orderInput');
-            orderInput.value = orderInput.value.slice(0, -1);
-        }
-        function clearInput() {
-            const orderInput = document.getElementById('orderInput');
-            orderInput.value = '';
-        }
-        function addOrder() {
-            const orderInput = document.getElementById('orderInput');
-            const orderNumber = orderInput.value.trim();
-            if (!orderNumber) {
-                alert('Enter an order number.');
-                return;
-            }
-            firebase.database().ref('orders').push({ number: orderNumber, called: false });
-            orderInput.value = '';
-        }
-        function deleteOrder(key) {
-            firebase.database().ref('orders/' + key).remove();
-        }
-        function renderOrders() {
-            const orderList = document.getElementById('orderList');
-            orderList.innerHTML = '';
-            firebase.database().ref('orders').on('value', snapshot => {
-                const orders = snapshot.val();
-                for (const key in orders) {
-                    const order = orders[key];
-                    const orderDiv = document.createElement('div');
-                    orderDiv.className = 'order-item';
-                    orderDiv.innerHTML = `
-                        <span>${order.number}</span>
-                        <div>
-                            <button onclick="callOrder('${key}')">Call</button>
-                            <button onclick="deleteOrder('${key}')">Delete</button>
-                        </div>
-                    `;
-                    orderList.appendChild(orderDiv);
-                }
-            });
-        }
-        function callOrder(key) {
-            firebase.database().ref('orders/' + key).update({ called: true });
-        }
-        renderOrders();
-    </script>
+  <div class="container">
+    <h1>Order Management</h1>
+    <input id="orderInput" type="text" placeholder="Enter Order Number">
+    <button onclick="addOrder()">Add Order</button>
+    <ul class="order-list" id="orderList"></ul>
+  </div>
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const orderInput = document.getElementById('orderInput');
+    const orderList = document.getElementById('orderList');
+
+    function addOrder() {
+      const orderNumber = orderInput.value;
+      if (!orderNumber) return;
+      const orderRef = database.ref('orders').push();
+      orderRef.set({ id: orderRef.key, number: orderNumber });
+      orderInput.value = '';
+    }
+
+    function deleteOrder(orderId) {
+      database.ref(`orders/${orderId}`).remove();
+    }
+
+    function callOrder(orderId) {
+      database.ref('calledOrder').set(orderId);
+    }
+
+    database.ref('orders').on('value', (snapshot) => {
+      orderList.innerHTML = '';
+      snapshot.forEach((childSnapshot) => {
+        const order = childSnapshot.val();
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${order.number}
+          <button class="call" onclick="callOrder('${order.id}')">Call</button>
+          <button class="delete" onclick="deleteOrder('${order.id}')">Delete</button>
+        `;
+        orderList.appendChild(li);
+      });
+    });
+  </script>
 </body>
 </html>
