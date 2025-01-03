@@ -1,54 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Management - Page 2</title>
-    <style>
-        /* Add styling here (similar to above, for simplicity, omitted here) */
-    </style>
+  <title>Order Display Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      display: flex;
+      gap: 20px;
+    }
+    .box {
+      flex: 1;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background-color: #ffffff;
+    }
+    .called-orders {
+      color: green;
+    }
+    .all-orders {
+      color: red;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js"></script>
 </head>
 <body>
-    <h1>Order Management - Laptop</h1>
-    <div class="container">
-        <h2>Order Status</h2>
-        <div>
-            <h3>First Box (Called Orders)</h3>
-            <div id="firstBox" class="box"></div>
-        </div>
-        <div>
-            <h3>Second Box (All Orders)</h3>
-            <div id="secondBox" class="box"></div>
-        </div>
+  <div class="container">
+    <div class="box called-orders">
+      <h2>Called Orders</h2>
+      <ul id="calledOrdersList"></ul>
     </div>
+    <div class="box all-orders">
+      <h2>All Orders</h2>
+      <ul id="allOrdersList"></ul>
+    </div>
+  </div>
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-    <script>
-        function loadOrders() {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            const firstBox = document.getElementById('firstBox');
-            const secondBox = document.getElementById('secondBox');
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-            firstBox.innerHTML = '';
-            secondBox.innerHTML = '';
+    const calledOrdersList = document.getElementById('calledOrdersList');
+    const allOrdersList = document.getElementById('allOrdersList');
 
-            orders.forEach(order => {
-                const orderDiv = document.createElement('div');
-                orderDiv.className = 'order';
-                orderDiv.innerText = order.number;
+    database.ref('calledOrder').on('value', (snapshot) => {
+      calledOrdersList.innerHTML = '';
+      const calledOrderId = snapshot.val();
+      if (calledOrderId) {
+        database.ref(`orders/${calledOrderId}`).once('value', (orderSnapshot) => {
+          const order = orderSnapshot.val();
+          if (order) {
+            const li = document.createElement('li');
+            li.textContent = order.number;
+            calledOrdersList.appendChild(li);
+          }
+        });
+      }
+    });
 
-                if (order.called) {
-                    firstBox.appendChild(orderDiv);
-                } else {
-                    secondBox.appendChild(orderDiv);
-                }
-            });
-        }
-
-        // Load orders on page load
-        window.onload = loadOrders;
-
-        // Optionally, reload every few seconds to check for updates
-        setInterval(loadOrders, 5000);
-    </script>
+    database.ref('orders').on('value', (snapshot) => {
+      allOrdersList.innerHTML = '';
+      snapshot.forEach((childSnapshot) => {
+        const order = childSnapshot.val();
+        const li = document.createElement('li');
+        li.textContent = order.number;
+        allOrdersList.appendChild(li);
+      });
+    });
+  </script>
 </body>
 </html>
