@@ -1,103 +1,157 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Order Input Page</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 400px;
-      margin: auto;
-    }
-    input, button {
-      margin: 5px 0;
-      padding: 10px;
-      font-size: 16px;
-    }
-    .order-list {
-      list-style-type: none;
-      padding: 0;
-    }
-    .order-list li {
-      display: flex;
-      justify-content: space-between;
-      margin: 5px 0;
-      background: #ffffff;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    button.call {
-      background-color: #007bff;
-      color: white;
-    }
-    button.delete {
-      background-color: #dc3545;
-      color: white;
-    }
-  </style>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js"></script>
+    <title>Order Page</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #orderNumber {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #numberPad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        #numberPad button {
+            padding: 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #numberPad button:hover {
+            background-color: #0056b3;
+        }
+        #orderList {
+            margin-top: 20px;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .order-item button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .order-item button:hover {
+            background-color: #c82333;
+        }
+        .order-item .call {
+            background-color: #28a745;
+        }
+        .order-item .call:hover {
+            background-color: #218838;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Order Management</h1>
-    <input id="orderInput" type="text" placeholder="Enter Order Number">
-    <button onclick="addOrder()">Add Order</button>
-    <ul class="order-list" id="orderList"></ul>
-  </div>
-  <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      databaseURL: "YOUR_DATABASE_URL",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+    <h1>Order Page</h1>
+    <input type="text" id="orderNumber" readonly>
+    <div id="numberPad">
+        <button onclick="addNumber('1')">1</button>
+        <button onclick="addNumber('2')">2</button>
+        <button onclick="addNumber('3')">3</button>
+        <button onclick="addNumber('4')">4</button>
+        <button onclick="addNumber('5')">5</button>
+        <button onclick="addNumber('6')">6</button>
+        <button onclick="addNumber('7')">7</button>
+        <button onclick="addNumber('8')">8</button>
+        <button onclick="addNumber('9')">9</button>
+        <button onclick="backspace()">←</button>
+        <button onclick="addNumber('0')">0</button>
+        <button onclick="addOrder()">Add</button>
+    </div>
+    <div id="orderList"></div>
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDnk7ugpoTyhjkW-5F3-_dVPujJOqBkfyI",
+            authDomain: "order-management-3d309.firebaseapp.com",
+            databaseURL: "https://order-management-3d309-default-rtdb.firebaseio.com",
+            projectId: "order-management-3d309",
+            storageBucket: "order-management-3d309.firebasestorage.app",
+            messagingSenderId: "749453981767",
+            appId: "1:749453981767:web:2be571a591d9bcbfb39962"
+        };
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    const orderInput = document.getElementById('orderInput');
-    const orderList = document.getElementById('orderList');
+        const orderNumberInput = document.getElementById('orderNumber');
+        const orderList = document.getElementById('orderList');
 
-    function addOrder() {
-      const orderNumber = orderInput.value;
-      if (!orderNumber) return;
-      const orderRef = database.ref('orders').push();
-      orderRef.set({ id: orderRef.key, number: orderNumber });
-      orderInput.value = '';
-    }
+        function addNumber(number) {
+            orderNumberInput.value += number;
+        }
 
-    function deleteOrder(orderId) {
-      database.ref(`orders/${orderId}`).remove();
-    }
+        function backspace() {
+            orderNumberInput.value = orderNumberInput.value.slice(0, -1);
+        }
 
-    function callOrder(orderId) {
-      database.ref('calledOrder').set(orderId);
-    }
+        function addOrder() {
+            const orderNumber = orderNumberInput.value;
+            if (orderNumber) {
+                db.collection('orders').add({ number: orderNumber });
+                orderNumberInput.value = '';
+            }
+        }
 
-    database.ref('orders').on('value', (snapshot) => {
-      orderList.innerHTML = '';
-      snapshot.forEach((childSnapshot) => {
-        const order = childSnapshot.val();
-        const li = document.createElement('li');
-        li.innerHTML = `
-          ${order.number}
-          <button class="call" onclick="callOrder('${order.id}')">Call</button>
-          <button class="delete" onclick="deleteOrder('${order.id}')">Delete</button>
-        `;
-        orderList.appendChild(li);
-      });
-    });
-  </script>
+        function deleteOrder(id) {
+            db.collection('orders').doc(id).delete();
+        }
+
+        function callOrder(id) {
+            db.collection('orders').doc(id).update({ called: true });
+        }
+
+        db.collection('orders').onSnapshot(snapshot => {
+            orderList.innerHTML = '';
+            snapshot.forEach(doc => {
+                const order = doc.data();
+                const orderItem = document.createElement('div');
+                orderItem.classList.add('order-item');
+                orderItem.innerHTML = `
+                    <span>${order.number}</span>
+                    <div>
+                        <button class="call" onclick="callOrder('${doc.id}')">Call</button>
+                        <button onclick="deleteOrder('${doc.id}')">Delete</button>
+                    </div>
+                `;
+                orderList.appendChild(orderItem);
+            });
+        });
+    </script>
 </body>
 </html>
